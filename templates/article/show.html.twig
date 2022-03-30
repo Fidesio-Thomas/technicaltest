@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>{{ article.title }}</h1>
+    <span>Ecrit le {{ article.createdAt | date('d/m/Y') }}, mis à jour le {{ article.updatedAt | date('d/m/Y') }}</span>
+
+    <p>{{ article.content | raw | escape }}</p>
+
+    <h5>Commentaires</h5>
+
+    {% if article.comments.values | length > 0 %}
+        <ul>
+            {% for comment in article.comments.values %}
+                <li>
+                    <span>Commentaire posté par {{ comment.author.userIdentifier }} (Note : {{ comment.commentRating.rating }} sur 5)</span>
+                    <p>{{ comment.content | raw | escape }}</p>
+                    {% if comment.commentRating is null %}
+                        <p>Notez ce commentaire : </p>
+                        <form action="{{ path('rate_comment') }}" method="post">
+                            <select name="rating">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                            <input type="hidden" name="commentId" value="{{ comment.id }}" />
+                            <button type="submit">Noter ce commentaire !</button>
+                        </form>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Pas de commentaires pour cet article !</p>
+    {% endif %}
+
+
+    <h5>Ecrire un commentaire</h5>
+
+    {% if app.user() is null %}
+        {{ form_start(commentForm, {
+            'class': 'commentForm'
+        }) }}
+            {{ form_widget(commentForm.content) }}
+            <button type="submit" id="postComment">Poster mon commentaire !</button>
+        {{ form_end(commentForm) }}
+    {% endif %}
+
+
+
+    <script type="text/javascript">
+        $('.commentForm').on(
+            'submit',
+            function (event) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                $.ajax(
+                    {
+                        type: 'POST',
+                        url: {{ path('api_comment_create') }},
+                        data: {
+                            'userId': {{ app.user.id | default(1) }},
+                            'articleId': {{ article.id }},
+                            'content': $('.commentContent').val()
+                        }
+                    }
+                )
+            }
+        )
+    </script>
+{% endblock %}

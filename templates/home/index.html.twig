@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Index</h1>
+
+    <p>Latest comments posted :</p>
+
+    <ul>
+        {% for comment in latestComments %}
+            Commentaire posté par {{ comment.author.userIdentifier }} le {{ comment.createdAt | date('d/m/Y') }} à {{ comment.createdAt | date('H:i:s') }} <br />
+            {{ comment.content }}
+        {% endfor %}
+    </ul>
+
+    <p>Link to articles :</p>
+
+    <ul>
+        {% for article in articles %}
+            <li>
+                <a href="{{ path('article_show', {'id': article.id}) }}">{{ article.title }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
